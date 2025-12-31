@@ -50,24 +50,43 @@ export async function GET(request: NextRequest) {
     const contacts = await prisma.emailContact.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      include: {
-        journal: {
-          select: {
-            name: true,
-            brand: true,
-          },
-        },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        articleTitle: true,
+        year: true,
       },
     });
+
+    console.log(`Export: Found ${contacts.length} contacts for export`);
+
+    // Check if no contacts found
+    if (contacts.length === 0) {
+      console.log('Export: No contacts found with filters:', { startDate, endDate, journalId, brandId });
+      // Return empty CSV with headers
+      const csv = Papa.unparse([], {
+        header: true,
+        columns: ['name', 'email', 'phone', 'article_title', 'year'],
+      });
+      
+      const filename = `email-contacts-${new Date().toISOString().split('T')[0]}.csv`;
+      return new NextResponse(csv, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+        },
+      });
+    }
 
     // Transform data for CSV
     const csvData = contacts.map((contact) => ({
       name: contact.name,
       email: contact.email,
       phone: contact.phone || '',
-      article_title: contact.journal.name,
-      brand: contact.journal.brand.name,
-      created_at: contact.createdAt.toISOString(),
+      article_title: contact.articleTitle || '',
+      year: contact.year || '',
     }));
 
     // Generate CSV

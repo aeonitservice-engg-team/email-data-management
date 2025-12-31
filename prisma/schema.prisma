@@ -53,7 +53,7 @@ model Journal {
 model EmailContact {
   id           String   @id @default(cuid())
   name         String
-  email        String   @unique // Email is now globally unique across all journals
+  email        String   // Email is unique per journal (see @@unique below)
   phone        String?
   articleTitle String?  @map("article_title") // Article/Publication title
   year         Int?     // Year of data collection
@@ -64,6 +64,7 @@ model EmailContact {
   journal   Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
   journalId String  @map("journal_id")
 
+  @@unique([email, journalId], name: "email_journal_unique")
   @@index([journalId])
   @@index([createdAt])
   @@index([email])

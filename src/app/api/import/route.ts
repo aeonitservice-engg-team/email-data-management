@@ -19,7 +19,7 @@ import { isValidEmail } from '@/lib/utils';
  * - article_title (optional) - title of the article/publication
  * - year (optional) - year of data collection
  * 
- * NOTE: Email must be globally unique across all journals
+ * NOTE: Email must be unique per journal (same email can exist in different journals)
  */
 
 interface CSVRow {
@@ -150,13 +150,6 @@ export async function POST(request: NextRequest) {
             continue;
           }
 
-          // Validate email format
-          if (!isValidEmail(email)) {
-            errors++;
-            errorDetails.push(`Invalid email format: ${email}`);
-            continue;
-          }
-
           // Validate year if provided
           if (yearStr && (isNaN(year!) || year! < 1900 || year! > 2100)) {
             errors++;
@@ -164,14 +157,17 @@ export async function POST(request: NextRequest) {
             continue;
           }
 
-          // Check if email already exists globally
-          const existingContact = await prisma.emailContact.findUnique({
-            where: { email },
+          // Check if email already exists in this journal
+          const existingContact = await prisma.emailContact.findFirst({
+            where: { 
+              email,
+              journalId 
+            },
           });
 
           if (existingContact) {
             duplicates++;
-            continue; // Skip duplicate email
+            continue; // Skip duplicate email in this journal
           }
 
           // Create new contact

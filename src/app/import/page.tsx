@@ -363,8 +363,9 @@ Jane Smith,jane@example.com,,Machine Learning Fundamentals,2025`}
               <ul>
                 <li>Maximum file size is 10MB</li>
                 <li>You must select a brand and journal before importing</li>
-                <li>Duplicate emails will be skipped (email is globally unique)</li>
-                <li>Invalid email formats will be skipped</li>
+                <li>Duplicate emails within the same journal will be skipped</li>
+                <li>Same email can exist in different journals</li>
+                <li>Rows with missing name or email will be skipped</li>
               </ul>
             </div>
           </CardContent>

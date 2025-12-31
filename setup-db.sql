@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS "journals" (
 CREATE TABLE IF NOT EXISTS "email_contacts" (
   "id" TEXT PRIMARY KEY,
   "name" TEXT NOT NULL,
-  "email" TEXT UNIQUE NOT NULL,
+  "email" TEXT NOT NULL,
   "phone" TEXT,
   "article_title" TEXT,
   "year" INTEGER,
@@ -60,6 +60,9 @@ CREATE INDEX IF NOT EXISTS "email_contacts_journal_id_idx" ON "email_contacts"("
 CREATE INDEX IF NOT EXISTS "email_contacts_created_at_idx" ON "email_contacts"("created_at");
 CREATE INDEX IF NOT EXISTS "email_contacts_email_idx" ON "email_contacts"("email");
 CREATE INDEX IF NOT EXISTS "email_contacts_year_idx" ON "email_contacts"("year");
+
+-- Create composite unique constraint for email per journal
+CREATE UNIQUE INDEX IF NOT EXISTS "email_contacts_email_journal_id_key" ON "email_contacts"("email", "journal_id");
 
 -- Note: Brands should be created through the application UI, not in SQL
 -- This allows for dynamic brand management
