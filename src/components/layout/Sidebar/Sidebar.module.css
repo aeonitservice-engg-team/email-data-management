@@ -78,6 +78,11 @@
   @apply w-2 h-2 rounded-full;
 }
 
+.overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 z-30;
+  @apply md:hidden;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .sidebar {
@@ -101,10 +106,25 @@
 
 @media (max-width: 768px) {
   .sidebar {
-    @apply -translate-x-full transition-transform;
+    @apply -translate-x-full transition-transform w-64;
   }
 
   .sidebar.open {
     @apply translate-x-0;
+  }
+  
+  /* Show full sidebar on mobile when open */
+  .sidebar.open .logoText,
+  .sidebar.open .navLabel,
+  .sidebar.open .brandSection {
+    @apply block;
+  }
+  
+  .sidebar.open .navItem {
+    @apply justify-start px-3;
+  }
+  
+  .sidebar.open .logoLink {
+    @apply justify-start;
   }
 }

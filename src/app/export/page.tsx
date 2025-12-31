@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout';
 import { Button, Card, CardHeader, CardContent, Input, Select, useToast } from '@/components/ui';
+import { useData } from '@/contexts/DataContext';
 import styles from './page.module.css';
 
 /**
@@ -34,9 +35,8 @@ interface Journal {
  */
 export default function ExportPage() {
   const { addToast } = useToast();
-  const [journals, setJournals] = useState<Journal[]>([]);
+  const { brands, journals } = useData();
   const [filteredJournals, setFilteredJournals] = useState<Journal[]>([]);
-  const [brands, setBrands] = useState<Brand[]>([]);
   const [isExporting, setIsExporting] = useState(false);
 
   // Filter states
@@ -46,40 +46,14 @@ export default function ExportPage() {
   const [brandId, setBrandId] = useState('');
 
   /**
-   * Fetch brands and journals for dropdowns
-   */
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch brands
-        const brandsResponse = await fetch('/api/brands?status=ACTIVE');
-        if (brandsResponse.ok) {
-          const brandsData = await brandsResponse.json();
-          setBrands(brandsData.brands);
-        }
-
-        // Fetch journals
-        const journalsResponse = await fetch('/api/journals?limit=100');
-        if (journalsResponse.ok) {
-          const journalsData = await journalsResponse.json();
-          setJournals(journalsData.journals);
-        }
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
-    }
-    fetchData();
-  }, []);
-
-  /**
    * Filter journals when brand is selected
    */
   useEffect(() => {
     if (brandId) {
-      const filtered = journals.filter((j) => j.brandId === brandId);
+      const filtered = journals.filter((j: Journal) => j.brandId === brandId);
       setFilteredJournals(filtered);
       // Reset journal if it doesn't belong to selected brand
-      if (journalId && !filtered.find((j) => j.id === journalId)) {
+      if (journalId && !filtered.find((j: Journal) => j.id === journalId)) {
         setJournalId('');
       }
     } else {
@@ -166,7 +140,7 @@ export default function ExportPage() {
                 label="Brand *"
                 options={[
                   { value: '', label: 'Select a brand...' },
-                  ...brands.map((b) => ({ value: b.id, label: `${b.name} (${b.code})` })),
+                  ...brands.map((b: Brand) => ({ value: b.id, label: `${b.name} (${b.code})` })),
                 ]}
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}

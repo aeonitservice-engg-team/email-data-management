@@ -30,8 +30,6 @@ interface CSVRow {
   year?: string;
 }
 
-const CHUNK_SIZE = 500;
-
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -125,77 +123,81 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process rows in chunks
-    let imported = 0;
-    let duplicates = 0;
+    // Process rows - validate and prepare data
     let errors = 0;
     const errorDetails: string[] = [];
+    const validContacts: Array<{
+      name: string;
+      email: string;
+      phone: string | null;
+      articleTitle: string | null;
+      year: number | null;
+    }> = [];
 
-    for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
-      const chunk = rows.slice(i, i + CHUNK_SIZE);
+    // Validate and collect valid rows
+    for (const row of rows) {
+      const name = row.name?.trim();
+      const email = row.email?.trim().toLowerCase();
+      const phone = row.phone?.trim() || null;
+      const articleTitle = row.article_title?.trim() || null;
+      const yearStr = row.year?.trim();
+      const year = yearStr ? parseInt(yearStr, 10) : null;
       
-      for (const row of chunk) {
-        try {
-          const name = row.name?.trim();
-          const email = row.email?.trim().toLowerCase();
-          const phone = row.phone?.trim() || null;
-          const articleTitle = row.article_title?.trim() || null;
-          const yearStr = row.year?.trim();
-          const year = yearStr ? parseInt(yearStr, 10) : null;
-          
-          // Validate required fields
-          if (!name || !email) {
-            errors++;
-            errorDetails.push(`Missing name or email in row`);
-            continue;
-          }
+      // Validate required fields
+      if (!name || !email) {
+        errors++;
+        if (errorDetails.length < 10) {
+          errorDetails.push(`Missing name or email in row`);
+        }
+        continue;
+      }
 
-          // Validate year if provided
-          if (yearStr && (isNaN(year!) || year! < 1900 || year! > 2100)) {
-            errors++;
-            errorDetails.push(`Invalid year: ${yearStr}`);
-            continue;
-          }
+      // Validate year if provided
+      if (yearStr && (isNaN(year!) || year! < 1900 || year! > 2100)) {
+        errors++;
+        if (errorDetails.length < 10) {
+          errorDetails.push(`Invalid year: ${yearStr}`);
+        }
+        continue;
+      }
 
-          // Check if email already exists in this journal
-          const existingContact = await prisma.emailContact.findFirst({
-            where: { 
-              email,
-              journalId 
-            },
-          });
+      validContacts.push({
+        name,
+        email,
+        phone,
+        articleTitle,
+        year,
+      });
+    }
 
-          if (existingContact) {
-            duplicates++;
-            continue; // Skip duplicate email in this journal
-          }
+    // Batch insert using database-level duplicate detection
+    // This is more efficient than querying first, especially for large datasets
+    const BATCH_SIZE = 500;
+    let totalInserted = 0;
 
-          // Create new contact
-          await prisma.emailContact.create({
-            data: {
-              name,
-              email,
-              phone,
-              articleTitle,
-              year,
-              journalId,
-            },
-          });
-
-          imported++;
-        } catch (err: unknown) {
-          // Handle unique constraint violation (race condition)
-          if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
-            duplicates++;
-          } else {
-            errors++;
-            if (errorDetails.length < 10) {
-              errorDetails.push(`Error processing row: ${err instanceof Error ? err.message : 'Unknown error'}`);
-            }
-          }
+    for (let i = 0; i < validContacts.length; i += BATCH_SIZE) {
+      const batch = validContacts.slice(i, i + BATCH_SIZE);
+      
+      try {
+        const result = await prisma.emailContact.createMany({
+          data: batch.map(contact => ({
+            ...contact,
+            journalId,
+          })),
+          skipDuplicates: true, // Database handles duplicates via unique constraint
+        });
+        
+        totalInserted += result.count;
+      } catch (err: unknown) {
+        errors += batch.length;
+        if (errorDetails.length < 10) {
+          errorDetails.push(`Batch insert error: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
       }
     }
+
+    const imported = totalInserted;
+    const duplicates = validContacts.length - totalInserted;
 
     return NextResponse.json({
       success: true,

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { StatCard, EmailsBarChart, BrandPieChart, TrendLineChart } from '@/components/dashboard';
-import { Card, CardHeader, CardContent, Spinner, Badge } from '@/components/ui';
+import { Card, CardHeader, CardContent, Spinner, Badge, Button } from '@/components/ui';
+import { useData } from '@/contexts/DataContext';
 import { formatNumber } from '@/lib/utils';
 import styles from './page.module.css';
 
@@ -28,9 +29,17 @@ interface AnalyticsData {
  * Client-side component for fetching and displaying dashboard data.
  */
 export function DashboardContent() {
+  const { brands, journals, emailCount, loading: statsLoading, lastFetched, fetchStats } = useData();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-fetch stats on mount if no data exists
+  useEffect(() => {
+    if (!lastFetched && !statsLoading) {
+      fetchStats();
+    }
+  }, [lastFetched, statsLoading, fetchStats]);
 
   useEffect(() => {
     async function fetchAnalytics() {

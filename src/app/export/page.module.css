@@ -11,7 +11,7 @@
 }
 
 .actions {
-  @apply flex items-center justify-end gap-3 mt-6 pt-6 border-t border-neutral-200;
+  @apply flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 mt-6 pt-6 border-t border-neutral-200;
 }
 
 .downloadIcon {

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
 import { ToastProvider } from '@/components/ui';
-import { Sidebar } from '@/components/layout';
+import { DataProvider } from '@/contexts/DataContext';
+import { LayoutContent } from './LayoutContent';
 import styles from './layout.module.css';
 
 /**
@@ -26,14 +27,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ToastProvider>
-          <div className={styles.layout}>
-            <Sidebar />
-            <main className={styles.main}>
-              <div className={styles.content}>
-                {children}
-              </div>
-            </main>
-          </div>
+          <DataProvider>
+            <LayoutContent>{children}</LayoutContent>
+          </DataProvider>
         </ToastProvider>
       </body>
     </html>

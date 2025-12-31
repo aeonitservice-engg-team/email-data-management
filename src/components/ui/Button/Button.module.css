@@ -80,5 +80,5 @@
 }
 
 .icon {
-  @apply inline-flex shrink-0;
+  @apply inline-flex items-center shrink-0;
 }

@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from '@/components/layout';
 import { Button, Card, CardHeader, CardContent, Select, Spinner, useToast } from '@/components/ui';
+import { useData } from '@/contexts/DataContext';
 import styles from './page.module.css';
 
 /**
@@ -45,8 +46,7 @@ interface ImportSummary {
  */
 export default function ImportPage() {
   const { addToast } = useToast();
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [journals, setJournals] = useState<Journal[]>([]);
+  const { brands, journals } = useData();
   const [filteredJournals, setFilteredJournals] = useState<Journal[]>([]);
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedJournal, setSelectedJournal] = useState('');
@@ -56,50 +56,14 @@ export default function ImportPage() {
   const [summary, setSummary] = useState<ImportSummary | null>(null);
 
   /**
-   * Fetch brands on mount
-   */
-  useEffect(() => {
-    async function fetchBrands() {
-      try {
-        const response = await fetch('/api/brands?limit=100');
-        if (response.ok) {
-          const data = await response.json();
-          setBrands(data.brands);
-        }
-      } catch (error) {
-        console.error('Failed to fetch brands:', error);
-      }
-    }
-    fetchBrands();
-  }, []);
-
-  /**
-   * Fetch journals for dropdown
-   */
-  useEffect(() => {
-    async function fetchJournals() {
-      try {
-        const response = await fetch('/api/journals?limit=100');
-        if (response.ok) {
-          const data = await response.json();
-          setJournals(data.journals);
-        }
-      } catch (error) {
-        console.error('Failed to fetch journals:', error);
-      }
-    }
-    fetchJournals();
-  }, []);
-
-  /**
    * Filter journals when brand changes
    */
   useEffect(() => {
     if (selectedBrand) {
-      const filtered = journals.filter(j => j.brandId === selectedBrand);
+      const filtered = journals.filter((j: Journal) => j.brandId === selectedBrand);
       setFilteredJournals(filtered);
       // Reset journal selection if it's not in the filtered list
-      if (selectedJournal && !filtered.find(j => j.id === selectedJournal)) {
+      if (selectedJournal && !filtered.find((j: Journal) => j.id === selectedJournal)) {
         setSelectedJournal('');
       }
     } else {
@@ -212,7 +176,7 @@ export default function ImportPage() {
                 label="Select Brand *"
                 options={[
                   { value: '', label: 'Choose a brand...' },
-                  ...brands.map((b) => ({ value: b.id, label: `${b.name} (${b.code})` })),
+                  ...brands.map((b: Brand) => ({ value: b.id, label: `${b.name} (${b.code})` })),
                 ]}
                 value={selectedBrand}
                 onChange={(e) => setSelectedBrand(e.target.value)}

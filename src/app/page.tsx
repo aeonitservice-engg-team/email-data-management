@@ -1,5 +1,6 @@
 import { Header } from '@/components/layout';
 import { DashboardContent } from './DashboardContent';
+import { FetchStatsButton } from './FetchStatsButton';
 
 /**
  * Dashboard Page
@@ -11,8 +12,7 @@ export default function DashboardPage() {
     <>
       <Header
         title="Dashboard"
-        description="Overview of your email collection data"
-      />
+        description="Overview of your email collection data"        actions={<FetchStatsButton />}      />
       <DashboardContent />
     </>
   );

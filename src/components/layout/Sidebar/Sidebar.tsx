@@ -7,6 +7,16 @@ import { cn } from '@/lib/utils';
 import styles from './Sidebar.module.css';
 
 /**
+ * Sidebar component props
+ */
+interface SidebarProps {
+  /** Whether sidebar is open on mobile */
+  isOpen?: boolean;
+  /** Callback to close sidebar */
+  onClose?: () => void;
+}
+
+/**
  * Navigation item interface
  */
 interface NavItem {
@@ -81,14 +91,24 @@ const navItems: NavItem[] = [
  * 
  * Main navigation sidebar for the application.
  */
-function Sidebar() {
+function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className={styles.sidebar}>
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div 
+          className={styles.overlay} 
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      
+      <aside className={cn(styles.sidebar, isOpen && styles.open)}>
       {/* Logo */}
       <div className={styles.logo}>
-        <Link href="/" className={styles.logoLink}>
+        <Link href="/" className={styles.logoLink} onClick={() => onClose?.()}>
           <span className={styles.logoIcon}>
             <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
@@ -108,6 +128,7 @@ function Sidebar() {
                 <Link
                   href={item.href}
                   className={cn(styles.navItem, isActive && styles.navItemActive)}
+                  onClick={() => onClose?.()}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <span className={styles.navIcon}>{item.icon}</span>
@@ -119,6 +140,7 @@ function Sidebar() {
         </ul>
       </nav>
     </aside>
+    </>
   );
 }
 
