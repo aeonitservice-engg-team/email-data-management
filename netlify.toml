@@ -7,17 +7,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  included_files = ["prisma/**", ".next/**"]
-
-[functions."**"]
-  timeout = 10
+  included_files = ["prisma/**"]
 
 [build.environment]
   NODE_VERSION = "20"
-  NPM_FLAGS = "--legacy-peer-deps"
-
-# Redirect all requests to Next.js
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/___netlify-handler"
-  status = 200
