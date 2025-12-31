@@ -64,7 +64,8 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [journals, setJournals] = useState<Journal[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [search, setSearch] = useState('');
   const [journalFilter, setJournalFilter] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
@@ -77,7 +78,7 @@ export default function ContactsPage() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Auto-fetch if no cached data exists
+  // Ensure cached data exists
   useEffect(() => {
     if (!lastFetched) {
       fetchStats();
@@ -107,10 +108,11 @@ export default function ContactsPage() {
    */
   const fetchContacts = useCallback(async () => {
     setLoading(true);
+    setHasLoaded(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '20',
+        limit: '5',
       });
       if (search) params.set('search', search);
       if (journalFilter) params.set('journalId', journalFilter);
@@ -130,9 +132,9 @@ export default function ContactsPage() {
     }
   }, [page, search, journalFilter, brandFilter, addToast]);
 
-  useEffect(() => {
-    fetchContacts();
-  }, [fetchContacts]);
+  // useEffect(() => {
+  //   fetchContacts();
+  // }, [fetchContacts]);
 
   /**
    * Debounced search handler
@@ -186,17 +188,29 @@ export default function ContactsPage() {
         description={`View all email contacts (${formatNumber(total)} total)`}
       />
 
-      {/* Filters */}
+      {!hasLoaded && (
+        <Card>
+          <div className={styles.loadPrompt}>
+            <svg className="w-14 h-14 text-neutral-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-neutral-900 mb-2">Load Email Contacts</h3>
+              <p className="text-base text-neutral-600">View and manage your collected email contacts</p>
+            </div>
+            <Button onClick={() => fetchContacts()}>
+              Load Contacts
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {hasLoaded && (
       <Card noPadding>
         <div className={styles.filters}>
           <Input
             placeholder="Search by name or email..."
             onChange={(e) => debouncedSearch(e.target.value)}
-            leftIcon={
-              <svg className={styles.searchIcon} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-              </svg>
-            }
           />
           <Select
             options={[
@@ -307,6 +321,7 @@ export default function ContactsPage() {
           </div>
         )}
       </Card>
+      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal

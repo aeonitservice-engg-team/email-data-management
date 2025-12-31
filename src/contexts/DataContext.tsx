@@ -42,6 +42,9 @@ interface CachedData {
   brands: Brand[];
   journals: Journal[];
   emailCount: number;
+  thisWeekCount: number;
+  percentChange: number;
+  monthlyData: Array<{ name: string; emails: number }>;
   timestamp: number;
 }
 
@@ -128,9 +131,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           brands: newBrands,
           journals: newJournals,
           emailCount: newEmailCount,
+          thisWeekCount: analyticsData.stats?.thisWeekCount || 0,
+          percentChange: analyticsData.stats?.percentChange || 0,
+          monthlyData: analyticsData.monthlyData || [],
           timestamp,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(cacheData));
+        // Also cache analytics separately for easy access
+        localStorage.setItem('app_analytics_cache', JSON.stringify({
+          thisWeekCount: cacheData.thisWeekCount,
+          percentChange: cacheData.percentChange,
+          monthlyData: cacheData.monthlyData,
+        }));
       } catch (error) {
         console.error('Failed to cache data:', error);
       }

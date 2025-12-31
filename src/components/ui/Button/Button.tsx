@@ -24,10 +24,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   /** Loading state */
   isLoading?: boolean;
-  /** Icon to display before text */
-  leftIcon?: React.ReactNode;
-  /** Icon to display after text */
-  rightIcon?: React.ReactNode;
 }
 
 /**
@@ -51,8 +47,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       size = 'md',
       fullWidth = false,
       isLoading = false,
-      leftIcon,
-      rightIcon,
+      // leftIcon,
+      // rightIcon,
       disabled,
       children,
       ...props
@@ -97,9 +93,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             </svg>
           </span>
         )}
-        {!isLoading && leftIcon && <span className={styles.icon}>{leftIcon}</span>}
         <span>{children}</span>
-        {!isLoading && rightIcon && <span className={styles.icon}>{rightIcon}</span>}
       </button>
     );
   },

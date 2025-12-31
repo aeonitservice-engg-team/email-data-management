@@ -83,7 +83,7 @@ export function DashboardContent() {
     try {
       setLoading(true);
 
-      // Aggregate by brand
+      // Aggregate by brand from cached data
       const brandData = cachedJournals.reduce(
         (acc, journal) => {
           const brandName = journal.brand.name;
@@ -108,20 +108,37 @@ export function DashboardContent() {
 
       const activeJournals = cachedJournals.filter(j => j.status === 'ACTIVE').length;
 
+      // Get cached analytics data
+      const cachedAnalytics = localStorage.getItem('app_analytics_cache');
+      let thisWeekCount = 0;
+      let percentChange = 0;
+      let monthlyData: Array<{ name: string; emails: number }> = [];
+
+      if (cachedAnalytics) {
+        try {
+          const analyticsData = JSON.parse(cachedAnalytics);
+          thisWeekCount = analyticsData.thisWeekCount || 0;
+          percentChange = analyticsData.percentChange || 0;
+          monthlyData = analyticsData.monthlyData || [];
+        } catch (e) {
+          console.error('Failed to parse cached analytics:', e);
+        }
+      }
+
       // Build analytics data from cached data
       const analyticsData: AnalyticsData = {
         stats: {
           totalContacts: emailCount,
           totalJournals: cachedJournals.length,
           activeJournals,
-          thisWeekCount: 0,
-          percentChange: 0,
+          thisWeekCount,
+          percentChange,
         },
         brandData: Object.entries(brandData).map(([name, value]) => ({
           name,
           value,
         })),
-        monthlyData: [], // Would need contact timestamps which we don't have cached
+        monthlyData,
         topJournals,
         brands: cachedBrands,
         journals: cachedJournals,

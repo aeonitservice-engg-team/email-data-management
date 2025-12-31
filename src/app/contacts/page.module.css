@@ -82,3 +82,15 @@
 .pageInfo {
   @apply text-sm text-neutral-600;
 }
+
+.loadPrompt {
+  @apply flex flex-col items-center justify-center py-16 px-4 gap-6;
+}
+
+.loadPrompt p {
+  @apply text-base text-neutral-600 text-center max-w-md;
+}
+
+.loadPromptButton {
+  @apply mt-2;
+}
