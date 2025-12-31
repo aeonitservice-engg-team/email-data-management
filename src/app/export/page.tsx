@@ -20,7 +20,11 @@ interface Brand {
 interface Journal {
   id: string;
   name: string;
-  brand: string;
+  brandId: string;
+  brand: {
+    id: string;
+    name: string;
+  };
 }
 
 /**
@@ -31,6 +35,7 @@ interface Journal {
 export default function ExportPage() {
   const { addToast } = useToast();
   const [journals, setJournals] = useState<Journal[]>([]);
+  const [filteredJournals, setFilteredJournals] = useState<Journal[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -65,6 +70,22 @@ export default function ExportPage() {
     }
     fetchData();
   }, []);
+
+  /**
+   * Filter journals when brand is selected
+   */
+  useEffect(() => {
+    if (brandId) {
+      const filtered = journals.filter((j) => j.brandId === brandId);
+      setFilteredJournals(filtered);
+      // Reset journal if it doesn't belong to selected brand
+      if (journalId && !filtered.find((j) => j.id === journalId)) {
+        setJournalId('');
+      }
+    } else {
+      setFilteredJournals(journals);
+    }
+  }, [brandId, journals, journalId]);
 
   /**
    * Handle export
@@ -140,12 +161,41 @@ export default function ExportPage() {
           />
           <CardContent>
             <div className={styles.filtersGrid}>
+              {/* Brand Filter - Must be selected first */}
+              <Select
+                label="Brand *"
+                options={[
+                  { value: '', label: 'Select a brand...' },
+                  ...brands.map((b) => ({ value: b.id, label: `${b.name} (${b.code})` })),
+                ]}
+                value={brandId}
+                onChange={(e) => setBrandId(e.target.value)}
+                helperText="Select a brand first to see its journals"
+                fullWidth
+              />
+
+              {/* Journal Filter - Filtered by brand */}
+              <Select
+                label="Journal *"
+                options={[
+                  { value: '', label: brandId ? 'Select a journal...' : 'Select a brand first' },
+                  ...filteredJournals.map((j) => ({ value: j.id, label: j.name })),
+                ]}
+                value={journalId}
+                onChange={(e) => setJournalId(e.target.value)}
+                disabled={!brandId}
+                helperText={brandId ? `${filteredJournals.length} journals available` : 'Brand selection required'}
+                fullWidth
+              />
+
               {/* Date Range */}
               <Input
                 label="Start Date"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                disabled={!journalId}
+                helperText="Optional: Filter by date range"
                 fullWidth
               />
               <Input
@@ -153,30 +203,8 @@ export default function ExportPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                fullWidth
-              />
-
-              {/* Journal Filter */}
-              <Select
-                label="Journal"
-                options={[
-                  { value: '', label: 'All Journals' },
-                  ...journals.map((j) => ({ value: j.id, label: j.name })),
-                ]}
-                value={journalId}
-                onChange={(e) => setJournalId(e.target.value)}
-                fullWidth
-              />
-
-              {/* Brand Filter */}
-              <Select
-                label="Brand"
-                options={[
-                  { value: '', label: 'All Brands' },
-                  ...brands.map((b) => ({ value: b.id, label: b.name })),
-                ]}
-                value={brandId}
-                onChange={(e) => setBrandId(e.target.value)}
+                disabled={!journalId}
+                helperText="Optional: Filter by date range"
                 fullWidth
               />
             </div>
