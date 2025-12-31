@@ -1,6 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+
+const STORAGE_KEY = 'app_stats_cache';
 
 /**
  * Brand interface
@@ -9,6 +11,10 @@ interface Brand {
   id: string;
   name: string;
   code: string;
+  status?: 'ACTIVE' | 'INACTIVE';
+  _count?: {
+    journals: number;
+  };
 }
 
 /**
@@ -18,10 +24,25 @@ interface Journal {
   id: string;
   name: string;
   brandId: string;
+  issn?: string | null;
+  subject?: string | null;
+  frequency?: string | null;
+  status?: 'ACTIVE' | 'INACTIVE';
   brand: {
     id: string;
     name: string;
   };
+  contactCount?: number;
+}
+
+/**
+ * Cached data structure
+ */
+interface CachedData {
+  brands: Brand[];
+  journals: Journal[];
+  emailCount: number;
+  timestamp: number;
 }
 
 /**
@@ -34,6 +55,7 @@ interface DataContextState {
   loading: boolean;
   lastFetched: Date | null;
   fetchStats: () => Promise<void>;
+  invalidateCache: () => void;
 }
 
 const DataContext = createContext<DataContextState>({
@@ -43,6 +65,7 @@ const DataContext = createContext<DataContextState>({
   loading: false,
   lastFetched: null,
   fetchStats: async () => {},
+  invalidateCache: () => {},
 });
 
 export const useData = () => useContext(DataContext);
@@ -51,7 +74,7 @@ export const useData = () => useContext(DataContext);
  * Data Provider Component
  * 
  * Provides global access to brands, journals, and email count.
- * Data is fetched once and reused across all pages.
+ * Data is fetched once and persisted in localStorage.
  */
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -60,37 +83,70 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
 
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEY);
+      if (cached) {
+        const data: CachedData = JSON.parse(cached);
+        setBrands(data.brands || []);
+        setJournals(data.journals || []);
+        setEmailCount(data.emailCount || 0);
+        setLastFetched(new Date(data.timestamp));
+      }
+    } catch (error) {
+      console.error('Failed to load cached data:', error);
+    }
+  }, []);
+
   const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all data in parallel
-      const [brandsRes, journalsRes, analyticsRes] = await Promise.all([
-        fetch('/api/brands?limit=100'),
-        fetch('/api/journals?limit=100'),
-        fetch('/api/analytics'),
-      ]);
+      // Fetch only analytics which now includes brands and journals
+      const response = await fetch('/api/analytics');
 
-      if (brandsRes.ok) {
-        const brandsData = await brandsRes.json();
-        setBrands(brandsData.brands || []);
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics');
       }
 
-      if (journalsRes.ok) {
-        const journalsData = await journalsRes.json();
-        setJournals(journalsData.journals || []);
-      }
+      const analyticsData = await response.json();
+      
+      const newBrands: Brand[] = analyticsData.brands || [];
+      const newJournals: Journal[] = analyticsData.journals || [];
+      const newEmailCount = analyticsData.stats?.totalContacts || 0;
 
-      if (analyticsRes.ok) {
-        const analyticsData = await analyticsRes.json();
-        setEmailCount(analyticsData.totalContacts || 0);
-      }
+      setBrands(newBrands);
+      setJournals(newJournals);
+      setEmailCount(newEmailCount);
 
-      setLastFetched(new Date());
+      const timestamp = Date.now();
+      setLastFetched(new Date(timestamp));
+
+      // Save to localStorage
+      try {
+        const cacheData: CachedData = {
+          brands: newBrands,
+          journals: newJournals,
+          emailCount: newEmailCount,
+          timestamp,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cacheData));
+      } catch (error) {
+        console.error('Failed to cache data:', error);
+      }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const invalidateCache = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setBrands([]);
+    setJournals([]);
+    setEmailCount(0);
+    setLastFetched(null);
   }, []);
 
   return (
@@ -102,6 +158,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         loading,
         lastFetched,
         fetchStats,
+        invalidateCache,
       }}
     >
       {children}

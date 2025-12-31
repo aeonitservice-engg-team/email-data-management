@@ -8,6 +8,39 @@ import { formatNumber } from '@/lib/utils';
 import styles from './page.module.css';
 
 /**
+ * Brand interface
+ */
+interface Brand {
+  id: string;
+  name: string;
+  code: string;
+  status?: 'ACTIVE' | 'INACTIVE';
+  _count?: {
+    journals: number;
+  };
+}
+
+/**
+ * Journal interface
+ */
+interface Journal {
+  id: string;
+  name: string;
+  brandId: string;
+  issn?: string | null;
+  subject?: string | null;
+  frequency?: string | null;
+  status?: 'ACTIVE' | 'INACTIVE';
+  createdAt?: string;
+  brand: {
+    id: string;
+    name: string;
+    code?: string;
+  };
+  contactCount?: number;
+}
+
+/**
  * Analytics data interface
  */
 interface AnalyticsData {
@@ -21,15 +54,17 @@ interface AnalyticsData {
   brandData: Array<{ name: string; value: number }>;
   monthlyData: Array<{ name: string; emails: number }>;
   topJournals: Array<{ name: string; emails: number; brand: string }>;
+  brands: Brand[];
+  journals: Journal[];
 }
 
 /**
  * Dashboard Content component
  * 
- * Client-side component for fetching and displaying dashboard data.
+ * Client-side component for displaying dashboard data from cache.
  */
 export function DashboardContent() {
-  const { brands, journals, emailCount, loading: statsLoading, lastFetched, fetchStats } = useData();
+  const { brands: cachedBrands, journals: cachedJournals, emailCount, loading: statsLoading, lastFetched, fetchStats } = useData();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,24 +76,64 @@ export function DashboardContent() {
     }
   }, [lastFetched, statsLoading, fetchStats]);
 
+  // Build dashboard data from cached brands and journals
   useEffect(() => {
-    async function fetchAnalytics() {
-      try {
-        const response = await fetch('/api/analytics');
-        if (!response.ok) {
-          throw new Error('Failed to fetch analytics');
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    }
+    if (!lastFetched) return; // Wait for stats to be fetched first
 
-    fetchAnalytics();
-  }, []);
+    try {
+      setLoading(true);
+
+      // Aggregate by brand
+      const brandData = cachedJournals.reduce(
+        (acc, journal) => {
+          const brandName = journal.brand.name;
+          if (!acc[brandName]) {
+            acc[brandName] = 0;
+          }
+          acc[brandName] += journal.contactCount || 0;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      // Get top 5 journals by contact count
+      const topJournals = [...cachedJournals]
+        .sort((a, b) => (b.contactCount || 0) - (a.contactCount || 0))
+        .slice(0, 5)
+        .map((j) => ({
+          name: j.name,
+          emails: j.contactCount || 0,
+          brand: j.brand.name,
+        }));
+
+      const activeJournals = cachedJournals.filter(j => j.status === 'ACTIVE').length;
+
+      // Build analytics data from cached data
+      const analyticsData: AnalyticsData = {
+        stats: {
+          totalContacts: emailCount,
+          totalJournals: cachedJournals.length,
+          activeJournals,
+          thisWeekCount: 0,
+          percentChange: 0,
+        },
+        brandData: Object.entries(brandData).map(([name, value]) => ({
+          name,
+          value,
+        })),
+        monthlyData: [], // Would need contact timestamps which we don't have cached
+        topJournals,
+        brands: cachedBrands,
+        journals: cachedJournals,
+      };
+
+      setData(analyticsData);
+      setLoading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setLoading(false);
+    }
+  }, [lastFetched, cachedJournals, cachedBrands, emailCount]);
 
   if (loading) {
     return (

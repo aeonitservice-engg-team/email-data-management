@@ -9,6 +9,7 @@ import prisma from '@/lib/prisma';
  * - Emails by brand
  * - Emails by month
  * - Top journals by email count
+ * - All brands and journals for caching
  */
 export async function GET() {
   try {
@@ -23,11 +24,36 @@ export async function GET() {
       where: { status: 'ACTIVE' },
     });
 
-    // Get brand data with journal info
+    // Get all brands with journal count
+    const brands = await prisma.brand.findMany({
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        status: true,
+        createdAt: true,
+        _count: {
+          select: {
+            journals: true,
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    // Get all journals with full details
     const journals = await prisma.journal.findMany({
       select: {
         id: true,
         name: true,
+        brandId: true,
+        issn: true,
+        subject: true,
+        frequency: true,
+        status: true,
+        createdAt: true,
         brand: {
           select: {
             id: true,
@@ -40,6 +66,9 @@ export async function GET() {
             contacts: true,
           },
         },
+      },
+      orderBy: {
+        name: 'asc',
       },
     });
 
@@ -163,6 +192,19 @@ export async function GET() {
         emails,
       })),
       topJournals,
+      brands,
+      journals: journals.map(j => ({
+        id: j.id,
+        name: j.name,
+        brandId: j.brandId,
+        issn: j.issn,
+        subject: j.subject,
+        frequency: j.frequency,
+        status: j.status,
+        createdAt: j.createdAt,
+        brand: j.brand,
+        contactCount: j._count.contacts,
+      })),
     });
   } catch (error) {
     console.error('Analytics error:', error);

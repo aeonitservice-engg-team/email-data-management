@@ -14,6 +14,7 @@ import {
   useToast,
   ConfirmModal,
 } from '@/components/ui';
+import { useData } from '@/contexts/DataContext';
 import { formatDate, formatNumber, debounce } from '@/lib/utils';
 import styles from './page.module.css';
 
@@ -75,6 +76,7 @@ const initialFormData: JournalFormData = {
  */
 export default function JournalsPage() {
   const { addToast } = useToast();
+  const { brands: cachedBrands, journals: cachedJournals, fetchStats, lastFetched } = useData();
   const [journals, setJournals] = useState<Journal[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,55 +95,64 @@ export default function JournalsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  /**
-   * Fetch brands from API
-   */
-  const fetchBrands = useCallback(async () => {
-    try {
-      const response = await fetch('/api/brands?status=ACTIVE');
-      if (!response.ok) throw new Error('Failed to fetch brands');
-      const data = await response.json();
-      setBrands(data.brands);
-    } catch (error) {
-      addToast('Failed to load brands', 'error');
+  // Auto-fetch if no cached data exists
+  useEffect(() => {
+    if (!lastFetched) {
+      fetchStats();
     }
-  }, [addToast]);
+  }, [lastFetched, fetchStats]);
 
-  /**
-   * Fetch journals from API
-   */
-  const fetchJournals = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10',
-      });
-      if (search) params.set('search', search);
-      if (brandFilter) params.set('brandId', brandFilter);
-      if (statusFilter) params.set('status', statusFilter);
+  // Use cached brands
+  useEffect(() => {
+    if (cachedBrands.length > 0) {
+      setBrands(cachedBrands as Brand[]);
+    }
+  }, [cachedBrands]);
 
-      const response = await fetch(`/api/journals?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch journals');
-
-      const data = await response.json();
-      setJournals(data.journals);
-      setTotalPages(data.pagination.totalPages);
-      setTotal(data.pagination.total);
-    } catch (error) {
-      addToast('Failed to load journals', 'error');
-    } finally {
+  // Filter and paginate cached journals
+  useEffect(() => {
+    if (cachedJournals.length === 0) {
+      setJournals([]);
+      setTotal(0);
+      setTotalPages(1);
       setLoading(false);
+      return;
     }
-  }, [page, search, brandFilter, statusFilter, addToast]);
 
-  useEffect(() => {
-    fetchBrands();
-  }, [fetchBrands]);
+    // Apply filters
+    let filtered = [...cachedJournals] as Journal[];
 
-  useEffect(() => {
-    fetchJournals();
-  }, [fetchJournals]);
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(
+        (j) =>
+          j.name.toLowerCase().includes(searchLower) ||
+          j.issn?.toLowerCase().includes(searchLower) ||
+          j.subject?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (brandFilter) {
+      filtered = filtered.filter((j) => j.brandId === brandFilter);
+    }
+
+    if (statusFilter) {
+      filtered = filtered.filter((j) => j.status === statusFilter);
+    }
+
+    // Calculate pagination
+    const itemsPerPage = 10;
+    const totalCount = filtered.length;
+    const totalPagesCount = Math.ceil(totalCount / itemsPerPage);
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedJournals = filtered.slice(startIndex, endIndex);
+
+    setJournals(paginatedJournals);
+    setTotal(totalCount);
+    setTotalPages(totalPagesCount || 1);
+    setLoading(false);
+  }, [cachedJournals, search, brandFilter, statusFilter, page]);
 
   /**
    * Debounced search handler
@@ -234,7 +245,8 @@ export default function JournalsPage() {
         'success',
       );
       setIsModalOpen(false);
-      fetchJournals();
+      // Refresh data from server
+      fetchStats();
     } catch (error) {
       addToast(error instanceof Error ? error.message : 'Failed to save journal', 'error');
     } finally {
@@ -260,7 +272,8 @@ export default function JournalsPage() {
 
       addToast('Journal deleted successfully', 'success');
       setIsDeleteModalOpen(false);
-      fetchJournals();
+      // Refresh data from server
+      fetchStats();
     } catch (error) {
       addToast('Failed to delete journal', 'error');
     } finally {

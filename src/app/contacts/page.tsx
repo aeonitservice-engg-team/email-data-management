@@ -12,6 +12,7 @@ import {
   useToast,
   ConfirmModal,
 } from '@/components/ui';
+import { useData } from '@/contexts/DataContext';
 import { formatDate, formatNumber, debounce } from '@/lib/utils';
 import styles from './page.module.css';
 
@@ -59,6 +60,7 @@ interface Journal {
  */
 export default function ContactsPage() {
   const { addToast } = useToast();
+  const { brands: cachedBrands, journals: cachedJournals, fetchStats, lastFetched } = useData();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [journals, setJournals] = useState<Journal[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -75,35 +77,30 @@ export default function ContactsPage() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  /**
-   * Fetch brands for filter dropdown
-   */
-  const fetchBrands = useCallback(async () => {
-    try {
-      const response = await fetch('/api/brands?status=ACTIVE');
-      if (response.ok) {
-        const data = await response.json();
-        setBrands(data.brands);
-      }
-    } catch (error) {
-      console.error('Failed to fetch brands:', error);
+  // Auto-fetch if no cached data exists
+  useEffect(() => {
+    if (!lastFetched) {
+      fetchStats();
     }
-  }, []);
+  }, [lastFetched, fetchStats]);
 
-  /**
-   * Fetch journals for filter dropdown
-   */
-  const fetchJournals = useCallback(async () => {
-    try {
-      const response = await fetch('/api/journals?limit=100');
-      if (response.ok) {
-        const data = await response.json();
-        setJournals(data.journals);
-      }
-    } catch (error) {
-      console.error('Failed to fetch journals:', error);
+  // Use cached brands
+  useEffect(() => {
+    if (cachedBrands.length > 0) {
+      setBrands(cachedBrands.map(b => ({ id: b.id, name: b.name, code: b.code })));
     }
-  }, []);
+  }, [cachedBrands]);
+
+  // Use cached journals and transform for dropdown
+  useEffect(() => {
+    if (cachedJournals.length > 0) {
+      setJournals(cachedJournals.map(j => ({
+        id: j.id,
+        name: j.name,
+        brand: j.brand.name,
+      })));
+    }
+  }, [cachedJournals]);
 
   /**
    * Fetch contacts from API
@@ -132,11 +129,6 @@ export default function ContactsPage() {
       setLoading(false);
     }
   }, [page, search, journalFilter, brandFilter, addToast]);
-
-  useEffect(() => {
-    fetchBrands();
-    fetchJournals();
-  }, [fetchBrands, fetchJournals]);
 
   useEffect(() => {
     fetchContacts();

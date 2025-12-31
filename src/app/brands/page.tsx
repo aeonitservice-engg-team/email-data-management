@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout';
 import { Button, Card, CardHeader, CardContent, Input, Select, Modal, useToast } from '@/components/ui';
+import { useData } from '@/contexts/DataContext';
 import styles from './page.module.css';
 
 interface Brand {
@@ -18,6 +19,7 @@ interface Brand {
 
 export default function BrandsPage() {
   const { addToast } = useToast();
+  const { brands: cachedBrands, fetchStats, lastFetched } = useData();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,24 +30,20 @@ export default function BrandsPage() {
     status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE',
   });
 
+  // Auto-fetch if no cached data exists
   useEffect(() => {
-    fetchBrands();
-  }, []);
-
-  const fetchBrands = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/brands?limit=100');
-      if (response.ok) {
-        const data = await response.json();
-        setBrands(data.brands);
-      }
-    } catch (error) {
-      addToast('Failed to fetch brands', 'error');
-    } finally {
-      setIsLoading(false);
+    if (!lastFetched) {
+      fetchStats();
     }
-  };
+  }, [lastFetched, fetchStats]);
+
+  // Use cached brands
+  useEffect(() => {
+    if (cachedBrands.length > 0) {
+      setBrands(cachedBrands as Brand[]);
+    }
+    setIsLoading(false);
+  }, [cachedBrands]);
 
   const handleOpenModal = (brand?: Brand) => {
     if (brand) {
@@ -101,7 +99,8 @@ export default function BrandsPage() {
         'success'
       );
       handleCloseModal();
-      fetchBrands();
+      // Refresh data from server
+      fetchStats();
     } catch (error) {
       addToast(error instanceof Error ? error.message : 'Failed to save brand', 'error');
     }
@@ -131,7 +130,8 @@ export default function BrandsPage() {
       }
 
       addToast('Brand deleted successfully', 'success');
-      fetchBrands();
+      // Refresh data from server
+      fetchStats();
     } catch (error) {
       addToast(error instanceof Error ? error.message : 'Failed to delete brand', 'error');
     }
