@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS "email_contacts" (
   "email" TEXT UNIQUE NOT NULL,
   "phone" TEXT,
   "article_title" TEXT,
+  "year" INTEGER,
   "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at" TIMESTAMP(3) NOT NULL,
   "journal_id" TEXT NOT NULL,
@@ -58,24 +59,9 @@ CREATE INDEX IF NOT EXISTS "journals_created_at_idx" ON "journals"("created_at")
 CREATE INDEX IF NOT EXISTS "email_contacts_journal_id_idx" ON "email_contacts"("journal_id");
 CREATE INDEX IF NOT EXISTS "email_contacts_created_at_idx" ON "email_contacts"("created_at");
 CREATE INDEX IF NOT EXISTS "email_contacts_email_idx" ON "email_contacts"("email");
+CREATE INDEX IF NOT EXISTS "email_contacts_year_idx" ON "email_contacts"("year");
 
--- Insert default brands (GlobalMeetX and ConfMeets)
-INSERT INTO "brands" ("id", "name", "code", "status", "created_at", "updated_at")
-VALUES 
-  ('clx0000001', 'GlobalMeetX', 'GMX', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-  ('clx0000002', 'ConfMeets', 'CM', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-ON CONFLICT ("name") DO NOTHING;
-CREATE INDEX IF NOT EXISTS "email_contacts_email_idx" ON "email_contacts"("email");
-
--- Create unique constraint for email_contacts
-CREATE UNIQUE INDEX IF NOT EXISTS "email_contacts_email_journal_id_key" ON "email_contacts"("email", "journal_id");
-
--- Insert sample data (optional)
--- Uncomment the lines below to add sample data
-
--- INSERT INTO "journals" ("id", "name", "brand", "status", "created_at", "updated_at")
--- VALUES 
---   ('sample1', 'Sample Journal 1', 'GLOBALMEETX', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
---   ('sample2', 'Sample Journal 2', 'CONFMEETS', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+-- Note: Brands should be created through the application UI, not in SQL
+-- This allows for dynamic brand management
 
 COMMIT;

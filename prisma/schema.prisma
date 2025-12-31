@@ -56,6 +56,7 @@ model EmailContact {
   email        String   @unique // Email is now globally unique across all journals
   phone        String?
   articleTitle String?  @map("article_title") // Article/Publication title
+  year         Int?     // Year of data collection
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -66,6 +67,7 @@ model EmailContact {
   @@index([journalId])
   @@index([createdAt])
   @@index([email])
+  @@index([year])
   @@map("email_contacts")
 }
 

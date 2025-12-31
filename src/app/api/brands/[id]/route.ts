@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // GET /api/brands/[id] - Get a single brand by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const brand = await prisma.brand.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: { journals: true },
@@ -42,15 +43,16 @@ export async function GET(
 // PUT /api/brands/[id] - Update a brand
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name, code, status } = body;
 
     // Check if brand exists
     const existingBrand = await prisma.brand.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingBrand) {
@@ -62,7 +64,7 @@ export async function PUT(
       const conflictingBrand = await prisma.brand.findFirst({
         where: {
           AND: [
-            { id: { not: params.id } },
+            { id: { not: id } },
             {
               OR: [
                 ...(name
@@ -86,7 +88,7 @@ export async function PUT(
     }
 
     const updatedBrand = await prisma.brand.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(name && { name }),
         ...(code && { code: code.toUpperCase() }),
@@ -112,12 +114,13 @@ export async function PUT(
 // DELETE /api/brands/[id] - Delete a brand
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check if brand has journals
     const brand = await prisma.brand.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: { journals: true },
@@ -139,7 +142,7 @@ export async function DELETE(
     }
 
     await prisma.brand.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Brand deleted successfully' });

@@ -1,4 +1,4 @@
-import React, { forwardRef, type InputHTMLAttributes } from 'react';
+import React, { forwardRef, useId, type InputHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 import styles from './Input.module.css';
 
@@ -50,7 +50,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
-    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const inputId = id || `input-${generatedId}`;
 
     return (
       <div className={cn(styles.container, fullWidth && styles.fullWidth)}>

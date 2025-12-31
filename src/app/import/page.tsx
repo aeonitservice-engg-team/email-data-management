@@ -349,13 +349,14 @@ export default function ImportPage() {
               <ul>
                 <li><code>phone</code> - Phone number</li>
                 <li><code>article_title</code> - Article or publication title</li>
+                <li><code>year</code> - Year of data collection (e.g., 2024)</li>
               </ul>
 
               <h4>Example CSV:</h4>
               <pre className={styles.codeBlock}>
-{`name,email,phone,article_title
-John Doe,john@example.com,+1234567890,Best Practices in AI
-Jane Smith,jane@example.com,,Machine Learning Fundamentals`}
+{`name,email,phone,article_title,year
+John Doe,john@example.com,+1234567890,Best Practices in AI,2024
+Jane Smith,jane@example.com,,Machine Learning Fundamentals,2025`}
               </pre>
 
               <h4>Notes:</h4>

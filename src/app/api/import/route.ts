@@ -17,6 +17,7 @@ import { isValidEmail } from '@/lib/utils';
  * - email (required)
  * - phone (optional)
  * - article_title (optional) - title of the article/publication
+ * - year (optional) - year of data collection
  * 
  * NOTE: Email must be globally unique across all journals
  */
@@ -26,6 +27,7 @@ interface CSVRow {
   email: string;
   phone?: string;
   article_title?: string;
+  year?: string;
 }
 
 const CHUNK_SIZE = 500;
@@ -138,6 +140,8 @@ export async function POST(request: NextRequest) {
           const email = row.email?.trim().toLowerCase();
           const phone = row.phone?.trim() || null;
           const articleTitle = row.article_title?.trim() || null;
+          const yearStr = row.year?.trim();
+          const year = yearStr ? parseInt(yearStr, 10) : null;
           
           // Validate required fields
           if (!name || !email) {
@@ -150,6 +154,13 @@ export async function POST(request: NextRequest) {
           if (!isValidEmail(email)) {
             errors++;
             errorDetails.push(`Invalid email format: ${email}`);
+            continue;
+          }
+
+          // Validate year if provided
+          if (yearStr && (isNaN(year!) || year! < 1900 || year! > 2100)) {
+            errors++;
+            errorDetails.push(`Invalid year: ${yearStr}`);
             continue;
           }
 
@@ -170,6 +181,7 @@ export async function POST(request: NextRequest) {
               email,
               phone,
               articleTitle,
+              year,
               journalId,
             },
           });
