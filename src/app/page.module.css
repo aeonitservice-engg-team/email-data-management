@@ -1,0 +1,64 @@
+/**
+ * Dashboard page styles
+ */
+
+.dashboard {
+  @apply space-y-6;
+}
+
+.loading {
+  @apply flex flex-col items-center justify-center h-64 gap-4 text-neutral-500;
+}
+
+.error {
+  @apply flex items-center justify-center h-64 text-error-500;
+}
+
+.statsGrid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+}
+
+.chartsGrid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-6;
+}
+
+.bottomGrid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-6;
+}
+
+.chartLarge {
+  @apply lg:col-span-2;
+}
+
+.chartSmall {
+  @apply lg:col-span-1;
+}
+
+.topJournalsList {
+  @apply space-y-3;
+}
+
+.topJournalItem {
+  @apply flex items-center justify-between py-2 border-b border-neutral-100 last:border-0;
+}
+
+.journalInfo {
+  @apply flex items-center gap-3;
+}
+
+.journalRank {
+  @apply w-6 h-6 flex items-center justify-center bg-neutral-100 text-neutral-600 
+         text-xs font-medium rounded-full;
+}
+
+.journalName {
+  @apply text-sm font-medium text-neutral-900 mb-1;
+}
+
+.journalCount {
+  @apply text-sm font-semibold text-neutral-700;
+}
+
+.emptyMessage {
+  @apply text-sm text-neutral-500 text-center py-4;
+}

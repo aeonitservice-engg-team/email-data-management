@@ -1,0 +1,7 @@
+/**
+ * Charts component styles
+ */
+
+.chartContainer {
+  @apply h-64;
+}

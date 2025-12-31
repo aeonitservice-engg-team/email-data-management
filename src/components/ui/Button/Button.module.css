@@ -1,0 +1,84 @@
+/**
+ * Button component styles
+ */
+
+.button {
+  @apply inline-flex items-center justify-center gap-2 font-medium rounded-md
+         transition-all duration-150 ease-in-out
+         focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Variants */
+.primary {
+  @apply bg-primary-600 text-white
+         hover:bg-primary-700
+         focus-visible:ring-primary-500;
+}
+
+.secondary {
+  @apply bg-secondary-600 text-white
+         hover:bg-secondary-700
+         focus-visible:ring-secondary-500;
+}
+
+.outline {
+  @apply border-2 border-primary-600 text-primary-600 bg-transparent
+         hover:bg-primary-50
+         focus-visible:ring-primary-500;
+}
+
+.ghost {
+  @apply text-neutral-600 bg-transparent
+         hover:bg-neutral-100
+         focus-visible:ring-neutral-500;
+}
+
+.danger {
+  @apply bg-error-500 text-white
+         hover:bg-error-600
+         focus-visible:ring-error-500;
+}
+
+/* Sizes */
+.sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.md {
+  @apply px-4 py-2 text-sm;
+}
+
+.lg {
+  @apply px-6 py-3 text-base;
+}
+
+/* Full width */
+.fullWidth {
+  @apply w-full;
+}
+
+/* Loading state */
+.loading {
+  @apply cursor-wait;
+}
+
+.spinner {
+  @apply inline-flex;
+}
+
+.spinnerIcon {
+  @apply w-4 h-4 animate-spin;
+}
+
+.spinnerTrack {
+  @apply opacity-25;
+}
+
+.spinnerHead {
+  @apply opacity-75;
+}
+
+.icon {
+  @apply inline-flex shrink-0;
+}

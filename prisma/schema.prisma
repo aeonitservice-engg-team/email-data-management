@@ -1,0 +1,76 @@
+// Prisma Schema for Email Data Management System
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Brand model stores brand information (dynamic)
+model Brand {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique // Short code for the brand (e.g., GMX, CM)
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  journals Journal[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("brands")
+}
+
+/// Journal model stores metadata for academic journals
+model Journal {
+  id        String   @id @default(cuid())
+  name      String
+  issn      String?
+  subject   String?
+  frequency String?
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  brand     Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brandId   String         @map("brand_id")
+  contacts  EmailContact[]
+
+  @@index([brandId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("journals")
+}
+
+/// EmailContact model stores collected email data
+model EmailContact {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique // Email is now globally unique across all journals
+  phone        String?
+  articleTitle String?  @map("article_title") // Article/Publication title
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  journal   Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  journalId String  @map("journal_id")
+
+  @@index([journalId])
+  @@index([createdAt])
+  @@index([email])
+  @@map("email_contacts")
+}
+
+/// Status enum for brand and journal status
+enum Status {
+  ACTIVE
+  INACTIVE
+}

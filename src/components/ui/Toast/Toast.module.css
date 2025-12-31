@@ -1,0 +1,70 @@
+/**
+ * Toast component styles
+ */
+
+.container {
+  @apply fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm;
+}
+
+.toast {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm;
+  animation: fadeIn 200ms ease-out;
+}
+
+/* Toast type variants */
+.success {
+  @apply bg-success-50 text-success-600;
+  border: 1px solid rgb(34 197 94 / 0.2);
+}
+
+.error {
+  @apply bg-error-50 text-error-600;
+  border: 1px solid rgb(239 68 68 / 0.2);
+}
+
+.warning {
+  @apply bg-warning-50 text-warning-600;
+  border: 1px solid rgb(245 158 11 / 0.2);
+}
+
+.info {
+  @apply bg-primary-50 text-primary-600;
+  border: 1px solid rgb(59 130 246 / 0.2);
+}
+
+.iconWrapper {
+  @apply flex-shrink-0;
+}
+
+.icon {
+  @apply w-5 h-5;
+}
+
+.message {
+  @apply flex-1 text-sm font-medium;
+}
+
+.closeButton {
+  @apply flex-shrink-0 p-1 rounded-md transition-colors
+         focus:outline-none focus-visible:ring-2;
+}
+
+.closeButton:hover {
+  background-color: rgb(0 0 0 / 0.1);
+}
+
+.closeIcon {
+  @apply w-4 h-4;
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

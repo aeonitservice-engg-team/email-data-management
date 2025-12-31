@@ -1,0 +1,28 @@
+/**
+ * Root layout styles
+ */
+
+.layout {
+  @apply min-h-screen bg-neutral-50;
+}
+
+.main {
+  @apply ml-64 min-h-screen;
+}
+
+.content {
+  @apply p-6;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .main {
+    @apply ml-20;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    @apply ml-0;
+  }
+}

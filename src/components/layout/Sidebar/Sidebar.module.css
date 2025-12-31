@@ -1,0 +1,110 @@
+/**
+ * Sidebar component styles
+ */
+
+.sidebar {
+  @apply fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-neutral-200
+         flex flex-col z-40;
+}
+
+.logo {
+  @apply p-5 border-b border-neutral-200;
+}
+
+.logoLink {
+  @apply flex items-center gap-3 text-neutral-900 hover:text-primary-600 transition-colors;
+}
+
+.logoIcon {
+  @apply w-8 h-8 flex items-center justify-center bg-primary-600 text-white rounded-lg;
+}
+
+.logoIcon svg {
+  @apply w-5 h-5;
+}
+
+.logoText {
+  @apply text-lg font-semibold;
+}
+
+.nav {
+  @apply flex-1 overflow-y-auto py-4;
+}
+
+.navList {
+  @apply space-y-1 px-3;
+}
+
+.navItem {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg
+         text-neutral-600 font-medium
+         transition-all duration-150
+         hover:bg-neutral-100 hover:text-neutral-900;
+}
+
+.navItemActive {
+  @apply bg-primary-50 text-primary-700 hover:bg-primary-100 hover:text-primary-700;
+}
+
+.navIcon {
+  @apply w-5 h-5 flex-shrink-0;
+}
+
+.navIcon svg {
+  @apply w-full h-full;
+}
+
+.navLabel {
+  @apply text-sm;
+}
+
+.brandSection {
+  @apply p-5 border-t border-neutral-200;
+}
+
+.brandTitle {
+  @apply text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-3;
+}
+
+.brandList {
+  @apply space-y-2;
+}
+
+.brandItem {
+  @apply flex items-center gap-2 text-sm text-neutral-600;
+}
+
+.brandDot {
+  @apply w-2 h-2 rounded-full;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sidebar {
+    @apply w-20;
+  }
+
+  .logoText,
+  .navLabel,
+  .brandSection {
+    @apply hidden;
+  }
+
+  .navItem {
+    @apply justify-center px-0;
+  }
+
+  .logoLink {
+    @apply justify-center;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    @apply -translate-x-full transition-transform;
+  }
+
+  .sidebar.open {
+    @apply translate-x-0;
+  }
+}

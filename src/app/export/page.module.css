@@ -1,0 +1,35 @@
+/**
+ * Export page styles
+ */
+
+.container {
+  @apply space-y-6;
+}
+
+.filtersGrid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.actions {
+  @apply flex items-center justify-end gap-3 mt-6 pt-6 border-t border-neutral-200;
+}
+
+.downloadIcon {
+  @apply w-4 h-4;
+}
+
+.info {
+  @apply text-sm text-neutral-600 space-y-4;
+}
+
+.info h4 {
+  @apply font-medium text-neutral-900 mt-4 first:mt-0;
+}
+
+.info ul {
+  @apply list-disc list-inside ml-2 space-y-1;
+}
+
+.info code {
+  @apply bg-neutral-100 px-1.5 py-0.5 rounded text-primary-600 font-mono text-xs;
+}

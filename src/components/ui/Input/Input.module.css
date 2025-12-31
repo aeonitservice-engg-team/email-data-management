@@ -1,0 +1,56 @@
+/**
+ * Input component styles
+ */
+
+.container {
+  @apply flex flex-col;
+}
+
+.fullWidth {
+  @apply w-full;
+}
+
+.label {
+  @apply block text-sm font-medium text-neutral-700 mb-1.5;
+}
+
+.inputWrapper {
+  @apply relative flex items-center;
+}
+
+.input {
+  @apply w-full px-3 py-2 text-sm text-neutral-900 bg-white
+         border border-neutral-300 rounded-md
+         placeholder:text-neutral-400
+         transition-colors duration-150
+         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+         disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-500;
+}
+
+.hasLeftIcon {
+  @apply pl-10;
+}
+
+.hasRightIcon {
+  @apply pr-10;
+}
+
+.hasError {
+  @apply border-error-500 focus:ring-error-500 focus:border-error-500;
+}
+
+.leftIcon {
+  @apply absolute left-3 text-neutral-400 pointer-events-none;
+}
+
+.rightIcon {
+  @apply absolute right-3 text-neutral-400;
+}
+
+.error {
+  @apply text-sm text-error-500 mt-1;
+}
+
+.helperText {
+  @apply text-sm text-neutral-500 mt-1;
+}

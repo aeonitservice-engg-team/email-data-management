@@ -1,0 +1,32 @@
+/**
+ * Spinner component styles
+ */
+
+.spinner {
+  @apply inline-flex text-primary-600;
+}
+
+.icon {
+  @apply animate-spin;
+}
+
+/* Spinner sizes */
+.sm .icon {
+  @apply w-4 h-4;
+}
+
+.md .icon {
+  @apply w-6 h-6;
+}
+
+.lg .icon {
+  @apply w-10 h-10;
+}
+
+.track {
+  @apply opacity-25;
+}
+
+.head {
+  @apply opacity-75;
+}

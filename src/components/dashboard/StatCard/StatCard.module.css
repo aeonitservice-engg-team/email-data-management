@@ -1,0 +1,57 @@
+/**
+ * StatCard component styles
+ */
+
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-neutral-200 p-5
+         flex items-start gap-4;
+}
+
+.iconWrapper {
+  @apply w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0;
+}
+
+.iconWrapper svg {
+  @apply w-6 h-6;
+}
+
+/* Icon variants */
+.primary {
+  @apply bg-primary-100 text-primary-600;
+}
+
+.secondary {
+  @apply bg-secondary-100 text-secondary-600;
+}
+
+.success {
+  @apply bg-success-50 text-success-600;
+}
+
+.warning {
+  @apply bg-warning-50 text-warning-600;
+}
+
+.content {
+  @apply flex-1 min-w-0;
+}
+
+.title {
+  @apply text-sm font-medium text-neutral-500;
+}
+
+.value {
+  @apply text-2xl font-bold text-neutral-900 mt-1;
+}
+
+.change {
+  @apply text-xs mt-1;
+}
+
+.positive {
+  @apply text-success-600;
+}
+
+.negative {
+  @apply text-error-500;
+}

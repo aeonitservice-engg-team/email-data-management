@@ -1,0 +1,90 @@
+/**
+ * Modal component styles
+ */
+
+.overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-4
+         backdrop-blur-sm;
+  background-color: rgb(0 0 0 / 0.5);
+  animation: fadeIn 200ms ease-out;
+}
+
+.modal {
+  @apply relative bg-white rounded-lg shadow-xl
+         max-h-[90vh] overflow-hidden flex flex-col;
+  animation: slideUp 200ms ease-out;
+}
+
+/* Modal sizes */
+.sm {
+  @apply w-full max-w-sm;
+}
+
+.md {
+  @apply w-full max-w-md;
+}
+
+.lg {
+  @apply w-full max-w-lg;
+}
+
+.xl {
+  @apply w-full max-w-2xl;
+}
+
+.header {
+  @apply p-5 pb-0;
+}
+
+.title {
+  @apply text-lg font-semibold text-neutral-900 pr-8;
+}
+
+.description {
+  @apply text-sm text-neutral-500 mt-1;
+}
+
+.closeButton {
+  @apply absolute top-4 right-4 p-1 rounded-md
+         text-neutral-400 hover:text-neutral-600
+         transition-colors
+         focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500;
+}
+
+.closeIcon {
+  @apply w-5 h-5;
+}
+
+.content {
+  @apply p-5 overflow-y-auto flex-1;
+}
+
+.footer {
+  @apply flex items-center justify-end gap-3 p-5
+         border-t border-neutral-200 bg-neutral-50;
+}
+
+.confirmMessage {
+  @apply text-sm text-neutral-600;
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

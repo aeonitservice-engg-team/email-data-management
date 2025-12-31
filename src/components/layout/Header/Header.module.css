@@ -1,0 +1,23 @@
+/**
+ * Header component styles
+ */
+
+.header {
+  @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6;
+}
+
+.titleSection {
+  @apply flex-1;
+}
+
+.title {
+  @apply text-2xl font-bold text-neutral-900;
+}
+
+.description {
+  @apply text-sm text-neutral-500 mt-1;
+}
+
+.actions {
+  @apply flex items-center gap-3;
+}

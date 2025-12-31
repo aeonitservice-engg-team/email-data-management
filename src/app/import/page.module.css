@@ -1,0 +1,143 @@
+/**
+ * Import page styles
+ */
+
+.container {
+  @apply space-y-6;
+}
+
+.journalSelect {
+  @apply mb-6;
+}
+
+.dropZone {
+  @apply relative border-2 border-dashed border-neutral-300 rounded-lg p-8
+         cursor-pointer transition-all duration-200
+         hover:border-primary-400;
+}
+
+.dropZone:hover {
+  background-color: rgb(239 246 255 / 0.5);
+}
+
+.dragging {
+  @apply border-primary-500 bg-primary-50;
+}
+
+.hasFile {
+  @apply border-success-500;
+  background-color: rgb(240 253 244 / 0.5);
+}
+
+.fileInput {
+  @apply hidden;
+}
+
+.dropContent {
+  @apply text-center;
+}
+
+.uploadIcon {
+  @apply w-12 h-12 mx-auto text-neutral-400 mb-4;
+}
+
+.dropText {
+  @apply text-neutral-600 font-medium;
+}
+
+.dropHint {
+  @apply text-sm text-neutral-400 mt-2;
+}
+
+.fileInfo {
+  @apply text-center;
+}
+
+.fileIcon {
+  @apply w-12 h-12 mx-auto text-success-600 mb-3;
+}
+
+.fileName {
+  @apply text-neutral-900 font-medium;
+}
+
+.fileSize {
+  @apply text-sm text-neutral-500 mt-1;
+}
+
+.actions {
+  @apply flex items-center justify-end gap-3 mt-6;
+}
+
+.summary {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-4;
+}
+
+.summaryItem {
+  @apply bg-neutral-50 rounded-lg p-4 text-center;
+}
+
+.summaryItem.success {
+  @apply bg-success-50;
+}
+
+.summaryItem.success .summaryValue {
+  @apply text-success-600;
+}
+
+.summaryItem.warning {
+  @apply bg-warning-50;
+}
+
+.summaryItem.warning .summaryValue {
+  @apply text-warning-600;
+}
+
+.summaryItem.error {
+  @apply bg-error-50;
+}
+
+.summaryItem.error .summaryValue {
+  @apply text-error-600;
+}
+
+.summaryLabel {
+  @apply block text-sm text-neutral-600;
+}
+
+.summaryValue {
+  @apply block text-2xl font-bold text-neutral-900 mt-1;
+}
+
+.errorDetails {
+  @apply mt-6 p-4 bg-error-50 rounded-lg;
+}
+
+.errorTitle {
+  @apply font-medium text-error-600 mb-2;
+}
+
+.errorList {
+  @apply list-disc list-inside text-sm text-error-600 space-y-1;
+}
+
+.instructions {
+  @apply text-sm text-neutral-600 space-y-4;
+}
+
+.instructions h4 {
+  @apply font-medium text-neutral-900 mt-4 first:mt-0;
+}
+
+.instructions ul {
+  @apply list-disc list-inside ml-2 space-y-1;
+}
+
+.instructions code {
+  @apply bg-neutral-100 px-1.5 py-0.5 rounded text-primary-600 font-mono text-xs;
+}
+
+.codeBlock {
+  @apply bg-neutral-800 text-neutral-100 p-4 rounded-lg overflow-x-auto
+         font-mono text-xs leading-relaxed;
+}
