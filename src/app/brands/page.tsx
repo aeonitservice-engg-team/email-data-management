@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout';
-import { Button, Card, CardHeader, CardContent, Input, Select, Modal, useToast } from '@/components/ui';
+import { Button, Card, CardHeader, CardContent, Input, Select, Modal, useToast, ConfirmModal } from '@/components/ui';
 import { useData } from '@/contexts/DataContext';
 import styles from './page.module.css';
 
@@ -29,6 +29,11 @@ export default function BrandsPage() {
     code: '',
     status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE',
   });
+
+  // Delete modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Auto-fetch if no cached data exists
   useEffect(() => {
@@ -106,7 +111,7 @@ export default function BrandsPage() {
     }
   };
 
-  const handleDelete = async (brand: Brand) => {
+  const handleDeleteClick = (brand: Brand) => {
     if (brand._count && brand._count.journals > 0) {
       addToast(
         `Cannot delete brand with ${brand._count.journals} associated journals`,
@@ -114,13 +119,16 @@ export default function BrandsPage() {
       );
       return;
     }
+    setBrandToDelete(brand);
+    setIsDeleteModalOpen(true);
+  };
 
-    if (!confirm(`Are you sure you want to delete ${brand.name}?`)) {
-      return;
-    }
+  const handleDelete = async () => {
+    if (!brandToDelete) return;
 
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/brands/${brand.id}`, {
+      const response = await fetch(`/api/brands/${brandToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -130,10 +138,14 @@ export default function BrandsPage() {
       }
 
       addToast('Brand deleted successfully', 'success');
+      setIsDeleteModalOpen(false);
+      setBrandToDelete(null);
       // Refresh data from server
       fetchStats();
     } catch (error) {
       addToast(error instanceof Error ? error.message : 'Failed to delete brand', 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -184,7 +196,7 @@ export default function BrandsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(brand)}
+                        onClick={() => handleDeleteClick(brand)}
                         disabled={brand._count ? brand._count.journals > 0 : false}
                       >
                         Delete
@@ -254,6 +266,17 @@ export default function BrandsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Brand"
+        message={`Are you sure you want to delete "${brandToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        isLoading={isDeleting}
+      />
     </>
   );
 }

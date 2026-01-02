@@ -73,6 +73,11 @@ export default function ContactsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
+  // Temp filter states (before submit)
+  const [tempBrandFilter, setTempBrandFilter] = useState('');
+  const [tempJournalFilter, setTempJournalFilter] = useState('');
+  const [filteredJournals, setFilteredJournals] = useState<Journal[]>([]);
+
   // Delete modal states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -102,6 +107,25 @@ export default function ContactsPage() {
       })));
     }
   }, [cachedJournals]);
+
+  // Filter journals based on selected brand
+  useEffect(() => {
+    if (tempBrandFilter) {
+      const brandData = cachedBrands.find(b => b.id === tempBrandFilter);
+      const filtered = cachedJournals
+        .filter(j => j.brandId === tempBrandFilter)
+        .map(j => ({
+          id: j.id,
+          name: j.name,
+          brand: brandData?.name || '',
+        }));
+      setFilteredJournals(filtered);
+      setTempJournalFilter(''); // Reset journal selection when brand changes
+    } else {
+      setFilteredJournals([]);
+      setTempJournalFilter('');
+    }
+  }, [tempBrandFilter, cachedJournals, cachedBrands]);
 
   /**
    * Fetch contacts from API
@@ -214,26 +238,30 @@ export default function ContactsPage() {
           />
           <Select
             options={[
-              { value: '', label: 'All Journals' },
-              ...journals.map((j) => ({ value: j.id, label: j.name })),
-            ]}
-            value={journalFilter}
-            onChange={(e) => {
-              setJournalFilter(e.target.value);
-              setPage(1);
-            }}
-          />
-          <Select
-            options={[
               { value: '', label: 'All Brands' },
               ...brands.map((brand) => ({ value: brand.id, label: brand.name })),
             ]}
-            value={brandFilter}
-            onChange={(e) => {
-              setBrandFilter(e.target.value);
+            value={tempBrandFilter}
+            onChange={(e) => setTempBrandFilter(e.target.value)}
+          />
+          <Select
+            options={[
+              { value: '', label: tempBrandFilter ? 'Select Journal' : 'Select Brand First' },
+              ...filteredJournals.map((j) => ({ value: j.id, label: j.name })),
+            ]}
+            value={tempJournalFilter}
+            onChange={(e) => setTempJournalFilter(e.target.value)}
+            disabled={!tempBrandFilter}
+          />
+          <Button
+            onClick={() => {
+              setBrandFilter(tempBrandFilter);
+              setJournalFilter(tempJournalFilter);
               setPage(1);
             }}
-          />
+          >
+            Submit
+          </Button>
         </div>
 
         {/* Table */}
