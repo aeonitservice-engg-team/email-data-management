@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const where: any = {};
 
     if (search) {
-      where.name = { contains: search, mode: 'insensitive' };
+      where.name = { contains: search };
     }
     if (brandId) {
       where.brandId = brandId;

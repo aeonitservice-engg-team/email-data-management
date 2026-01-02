@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search } },
+        { code: { contains: search } },
       ];
     }
 
@@ -78,8 +78,8 @@ export async function POST(request: NextRequest) {
     const existingBrand = await prisma.brand.findFirst({
       where: {
         OR: [
-          { name: { equals: name, mode: 'insensitive' } },
-          { code: { equals: code, mode: 'insensitive' } },
+          { name: { equals: name } },
+          { code: { equals: code } },
         ],
       },
     });

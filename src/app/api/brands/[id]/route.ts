@@ -68,10 +68,10 @@ export async function PUT(
             {
               OR: [
                 ...(name
-                  ? [{ name: { equals: name, mode: 'insensitive' as const } }]
+                  ? [{ name: { equals: name } }]
                   : []),
                 ...(code
-                  ? [{ code: { equals: code, mode: 'insensitive' as const } }]
+                  ? [{ code: { equals: code } }]
                   : []),
               ],
             },
