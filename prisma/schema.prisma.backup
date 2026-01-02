@@ -1,12 +1,12 @@
 // Prisma Schema for Email Data Management System
-// Database: MySQL (Local)
+// Database: PostgreSQL
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -55,7 +55,7 @@ model EmailContact {
   name         String
   email        String   // Email is unique per journal (see @@unique below)
   phone        String?
-  articleTitle String?  @map("article_title") @db.Text
+  articleTitle String?  @map("article_title") // Article/Publication title
   year         Int?     // Year of data collection
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")

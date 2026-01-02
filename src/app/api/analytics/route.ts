@@ -208,9 +208,15 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Analytics error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch analytics data' },
-      { status: 500 },
-    );
+    
+    // Provide more detailed error information
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorDetails = {
+      error: 'Failed to fetch analytics data',
+      details: errorMessage,
+      hint: 'Make sure the database tables are created. Import setup-mysql.sql via phpMyAdmin.',
+    };
+    
+    return NextResponse.json(errorDetails, { status: 500 });
   }
 }
