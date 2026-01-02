@@ -170,21 +170,21 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Batch insert using database-level duplicate detection
-    // This is more efficient than querying first, especially for large datasets
-    const BATCH_SIZE = 500;
+    // Optimized batch insert with connection pooling and larger batches
+    const BATCH_SIZE = 2000; // Larger batches for better network performance
     let totalInserted = 0;
 
     for (let i = 0; i < validContacts.length; i += BATCH_SIZE) {
       const batch = validContacts.slice(i, i + BATCH_SIZE);
       
       try {
+        // Use createMany with optimized settings
         const result = await prisma.emailContact.createMany({
           data: batch.map(contact => ({
             ...contact,
             journalId,
           })),
-          skipDuplicates: true, // Database handles duplicates via unique constraint
+          skipDuplicates: true,
         });
         
         totalInserted += result.count;
