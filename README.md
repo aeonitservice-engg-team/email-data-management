@@ -84,6 +84,8 @@ brew services start postgresql@16
 2. Drag to Applications folder and run
 3. PostgreSQL will start automatically
 
+
+
 #### 2. Clone and Install
 
 ```bash
