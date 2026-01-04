@@ -19,8 +19,11 @@ export type { CardProps, CardHeaderProps, CardContentProps, CardFooterProps } fr
 export { ToastProvider, useToast } from './Toast';
 export type { ToastItem, ToastType } from './Toast';
 
-export { Modal, ConfirmModal } from './Modal';
-export type { ModalProps, ConfirmModalProps } from './Modal';
+export { Modal } from './Modal';
+export type { ModalProps } from './Modal';
+
+export { ConfirmModal } from './ConfirmModal';
+export type { ConfirmModalProps } from './ConfirmModal';
 
 export { Badge } from './Badge';
 export type { BadgeProps, BadgeVariant } from './Badge';

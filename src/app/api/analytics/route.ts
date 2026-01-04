@@ -10,69 +10,109 @@ import prisma from '@/lib/prisma';
  * - Emails by month
  * - Top journals by email count
  * - All brands and journals for caching
+ * 
+ * OPTIMIZED: Uses parallel queries and aggregations for better performance
  */
 export async function GET() {
   try {
-    // Get total contacts count
-    const totalContacts = await prisma.emailContact.count();
+    // Calculate date ranges once
+    const now = new Date();
+    const weekAgo = new Date(now);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    const sixMonthsAgo = new Date(now);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-    // Get total journals count
-    const totalJournals = await prisma.journal.count();
-
-    // Get active journals count
-    const activeJournals = await prisma.journal.count({
-      where: { status: 'ACTIVE' },
-    });
-
-    // Get all brands with journal count
-    const brands = await prisma.brand.findMany({
-      select: {
-        id: true,
-        name: true,
-        code: true,
-        status: true,
-        createdAt: true,
-        _count: {
-          select: {
-            journals: true,
+    // Execute all independent queries in parallel for better performance
+    const [
+      totalContacts,
+      totalJournals,
+      activeJournals,
+      thisWeekCount,
+      currentMonthCount,
+      lastMonthCount,
+      brands,
+      journals,
+      emailsByMonth,
+    ] = await Promise.all([
+      // Basic counts
+      prisma.emailContact.count(),
+      prisma.journal.count(),
+      prisma.journal.count({ where: { status: 'ACTIVE' } }),
+      
+      // Time-based counts
+      prisma.emailContact.count({
+        where: { createdAt: { gte: weekAgo } },
+      }),
+      prisma.emailContact.count({
+        where: { createdAt: { gte: currentMonthStart } },
+      }),
+      prisma.emailContact.count({
+        where: {
+          createdAt: {
+            gte: lastMonthStart,
+            lte: lastMonthEnd,
           },
         },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
-
-    // Get all journals with full details
-    const journals = await prisma.journal.findMany({
-      select: {
-        id: true,
-        name: true,
-        brandId: true,
-        issn: true,
-        subject: true,
-        frequency: true,
-        status: true,
-        createdAt: true,
-        brand: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
+      }),
+      
+      // Brands with journal count
+      prisma.brand.findMany({
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          status: true,
+          createdAt: true,
+          _count: {
+            select: { journals: true },
           },
         },
-        _count: {
-          select: {
-            contacts: true,
+        orderBy: { name: 'asc' },
+      }),
+      
+      // Journals with brand and contact count
+      prisma.journal.findMany({
+        select: {
+          id: true,
+          name: true,
+          brandId: true,
+          issn: true,
+          subject: true,
+          frequency: true,
+          status: true,
+          createdAt: true,
+          brand: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
+          },
+          _count: {
+            select: { contacts: true },
           },
         },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+        orderBy: { name: 'asc' },
+      }),
+      
+      // Monthly data for charts
+      prisma.emailContact.groupBy({
+        by: ['createdAt'],
+        _count: { id: true },
+        where: {
+          createdAt: { gte: sixMonthsAgo },
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+    ]);
 
-    // Aggregate by brand
+    // Process aggregated data
     const brandData = journals.reduce(
       (acc, journal) => {
         const brandName = journal.brand.name;
@@ -85,26 +125,7 @@ export async function GET() {
       {} as Record<string, number>,
     );
 
-    // Get emails by month (last 6 months)
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const emailsByMonth = await prisma.emailContact.groupBy({
-      by: ['createdAt'],
-      _count: {
-        id: true,
-      },
-      where: {
-        createdAt: {
-          gte: sixMonthsAgo,
-        },
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    });
-
-    // Group by month
+    // Group emails by month
     const monthlyData = emailsByMonth.reduce(
       (acc, item) => {
         const month = new Date(item.createdAt).toLocaleDateString('en-US', {
@@ -120,7 +141,7 @@ export async function GET() {
       {} as Record<string, number>,
     );
 
-    // Get top 5 journals by contact count
+    // Get top 5 journals by contact count (already sorted by name, now sort by count)
     const topJournals = journals
       .sort((a, b) => b._count.contacts - a._count.contacts)
       .slice(0, 5)
@@ -129,46 +150,6 @@ export async function GET() {
         emails: j._count.contacts,
         brand: j.brand.name,
       }));
-
-    // Calculate this week's additions
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const thisWeekCount = await prisma.emailContact.count({
-      where: {
-        createdAt: {
-          gte: weekAgo,
-        },
-      },
-    });
-
-    // Calculate last month's additions
-    const lastMonthStart = new Date();
-    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-    lastMonthStart.setDate(1);
-    const lastMonthEnd = new Date();
-    lastMonthEnd.setDate(0);
-    
-    const lastMonthCount = await prisma.emailContact.count({
-      where: {
-        createdAt: {
-          gte: lastMonthStart,
-          lte: lastMonthEnd,
-        },
-      },
-    });
-
-    // Current month count
-    const currentMonthStart = new Date();
-    currentMonthStart.setDate(1);
-    currentMonthStart.setHours(0, 0, 0, 0);
-    
-    const currentMonthCount = await prisma.emailContact.count({
-      where: {
-        createdAt: {
-          gte: currentMonthStart,
-        },
-      },
-    });
 
     // Calculate percentage change
     const percentChange = lastMonthCount > 0

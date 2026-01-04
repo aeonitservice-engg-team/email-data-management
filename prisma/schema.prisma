@@ -46,6 +46,8 @@ model Journal {
   @@index([brandId])
   @@index([status])
   @@index([createdAt])
+  @@index([brandId, status]) // Composite index for brand queries
+  @@index([status, name]) // For filtered sorting
   @@map("journals")
 }
 
@@ -69,6 +71,8 @@ model EmailContact {
   @@index([createdAt])
   @@index([email])
   @@index([year])
+  @@index([journalId, createdAt]) // Composite index for performance
+  @@index([createdAt, id]) // For efficient groupBy operations
   @@map("email_contacts")
 }
 

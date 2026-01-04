@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout';
-import { Button, Card, CardHeader, CardContent, Input, Select, Modal, useToast } from '@/components/ui';
+import { Button, Card, CardHeader, CardContent, Input, Select, Modal, ConfirmModal, useToast } from '@/components/ui';
 import { useData } from '@/contexts/DataContext';
 import styles from './page.module.css';
 
@@ -23,6 +23,9 @@ export default function BrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -115,12 +118,18 @@ export default function BrandsPage() {
       return;
     }
 
-    if (!confirm(`Are you sure you want to delete ${brand.name}?`)) {
-      return;
-    }
+    // Open confirmation modal
+    setBrandToDelete(brand);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!brandToDelete) return;
+
+    setIsDeleting(true);
 
     try {
-      const response = await fetch(`/api/brands/${brand.id}`, {
+      const response = await fetch(`/api/brands/${brandToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -132,9 +141,18 @@ export default function BrandsPage() {
       addToast('Brand deleted successfully', 'success');
       // Refresh data from server
       fetchStats();
+      setIsConfirmModalOpen(false);
+      setBrandToDelete(null);
     } catch (error) {
       addToast(error instanceof Error ? error.message : 'Failed to delete brand', 'error');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setIsConfirmModalOpen(false);
+    setBrandToDelete(null);
   };
 
   return (
@@ -175,17 +193,21 @@ export default function BrandsPage() {
                     </div>
                     <div className={styles.brandActions}>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => handleOpenModal(brand)}
+                        title={`Edit ${brand.name}`}
+                        aria-label={`Edit ${brand.name}`}
                       >
                         Edit
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="danger"
                         size="sm"
                         onClick={() => handleDelete(brand)}
                         disabled={brand._count ? brand._count.journals > 0 : false}
+                        title={brand._count && brand._count.journals > 0 ? 'Cannot delete brand with journals' : `Delete ${brand.name}`}
+                        aria-label={brand._count && brand._count.journals > 0 ? 'Delete disabled' : `Delete ${brand.name}`}
                       >
                         Delete
                       </Button>
@@ -254,6 +276,19 @@ export default function BrandsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Brand"
+        message={`Are you sure you want to delete "${brandToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </>
   );
 }
