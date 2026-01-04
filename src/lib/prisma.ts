@@ -2,7 +2,12 @@ import { PrismaClient } from '@prisma/client';
 
 /**
  * Prisma Client singleton for database access
- * Prevents multiple instances during hot-reload in development
+ * 
+ * NOTE: For multi-user support with different database URLs,
+ * use createPrismaClient() from database-config.ts in API routes instead.
+ * 
+ * This singleton is kept for backward compatibility and uses
+ * the DATABASE_URL environment variable if available.
  */
 
 const globalForPrisma = globalThis as unknown as {
@@ -13,16 +18,12 @@ export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-    // Optimize connection pooling for better performance
     datasources: {
       db: {
-        url: process.env.DATABASE_URL,
+        url: process.env.DATABASE_URL || '',
       },
     },
   });
-
-// Configure connection pool for MariaDB/MySQL
-prisma.$connect();
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
