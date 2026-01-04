@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/request-helpers';
 
 /**
  * GET /api/contacts/[id]
@@ -11,6 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
 
     const contact = await prisma.emailContact.findUnique({
@@ -59,6 +60,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
     const body = await request.json();
     const { name, email, phone, articleTitle, journalId } = body;
@@ -159,6 +161,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
 
     // Check if contact exists

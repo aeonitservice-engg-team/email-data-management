@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/request-helpers';
 
 // GET /api/brands - List all brands with pagination and filters
 export async function GET(request: NextRequest) {
   try {
+    const prisma = getPrismaForRequest(request);
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -63,6 +64,7 @@ export async function GET(request: NextRequest) {
 // POST /api/brands - Create a new brand
 export async function POST(request: NextRequest) {
   try {
+    const prisma = getPrismaForRequest(request);
     const body = await request.json();
     const { name, code, status } = body;
 

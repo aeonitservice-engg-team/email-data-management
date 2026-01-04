@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/request-helpers';
 
 /**
  * GET /api/analytics
@@ -13,8 +13,9 @@ import prisma from '@/lib/prisma';
  * 
  * OPTIMIZED: Uses parallel queries and aggregations for better performance
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const prisma = getPrismaForRequest(request);
     // Calculate date ranges once
     const now = new Date();
     const weekAgo = new Date(now);

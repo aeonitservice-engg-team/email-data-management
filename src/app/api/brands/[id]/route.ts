@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/request-helpers';
 
 // GET /api/brands/[id] - Get a single brand by ID
 export async function GET(
@@ -7,6 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
     const brand = await prisma.brand.findUnique({
       where: { id },
@@ -46,6 +47,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
     const body = await request.json();
     const { name, code, status } = body;
@@ -117,6 +119,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
     // Check if brand has journals
     const brand = await prisma.brand.findUnique({

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { fetchGet } from '@/lib/fetch-with-db';
 
 const STORAGE_KEY = 'app_stats_cache';
 
@@ -106,7 +107,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       // Fetch only analytics which now includes brands and journals
-      const response = await fetch('/api/analytics');
+      const response = await fetchGet('/api/analytics');
 
       if (!response.ok) {
         throw new Error('Failed to fetch analytics');

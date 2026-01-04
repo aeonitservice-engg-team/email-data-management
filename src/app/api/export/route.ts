@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Papa from 'papaparse';
-import prisma from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/request-helpers';
 
 /**
  * GET /api/export
@@ -15,6 +15,7 @@ import prisma from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');

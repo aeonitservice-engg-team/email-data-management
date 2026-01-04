@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Papa from 'papaparse';
-import prisma from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/request-helpers';
 import { isValidEmail } from '@/lib/utils';
 
 /**
@@ -32,6 +32,7 @@ interface CSVRow {
 
 export async function POST(request: NextRequest) {
   try {
+    const prisma = getPrismaForRequest(request);
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const journalId = formData.get('journalId') as string | null;

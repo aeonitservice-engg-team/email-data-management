@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/request-helpers';
 import { Status } from '@prisma/client';
 
 /**
@@ -12,6 +12,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
 
     const journal = await prisma.journal.findUnique({
@@ -55,6 +56,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
     const body = await request.json();
     const { name, issn, brandId, subject, frequency, status } = body;
@@ -129,6 +131,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { id } = await params;
 
     // Check if journal exists

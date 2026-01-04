@@ -2,6 +2,17 @@
 
 A modern, full-stack Next.js application for managing email contacts collected for academic journal marketing campaigns. Built with TypeScript, Tailwind CSS, and PostgreSQL.
 
+## 🎯 New Feature: Multi-Database Support
+
+**The app now supports dynamic database URLs!** Each user can configure their own PostgreSQL/Neon database connection, making this a true multi-tenant application.
+
+- ⚙️ **Settings Page**: Configure your own database URL
+- 🔗 **Dynamic Connections**: Connect to any PostgreSQL/Neon database
+- 👥 **Multi-User Ready**: Different users can use different databases
+- 📝 **Easy Setup**: One SQL file to set up your entire database
+
+📖 **[Read the Multi-Database Configuration Guide →](./MULTI_DATABASE_GUIDE.md)**
+
 ## Features
 
 - 📊 **Dashboard Analytics** - Real-time statistics and charts showing email collection trends
@@ -104,10 +115,24 @@ DATABASE_URL="postgresql://YOUR_USERNAME@localhost:5432/email_data_management"
 
 #### 4. Setup Database Schema
 
+**Option A: Using Multi-Database Setup (Recommended for Neon)**
+
+If you're using Neon or want to support multiple database configurations:
+
+1. Create your Neon database at [neon.tech](https://neon.tech)
+2. Copy the `neon-setup.sql` file contents
+3. Run it in Neon's SQL Editor
+4. Configure the database URL in the app's Settings page
+5. No `.env` file needed - each user configures their own database!
+
+**Option B: Using Prisma Migrations (Traditional)**
+
 ```bash
 # Push Prisma schema to create all tables
 pnpm db:push
 ```
+
+📖 **[See Multi-Database Configuration Guide for more details →](./MULTI_DATABASE_GUIDE.md)**
 
 #### 5. Start Development Server
 
