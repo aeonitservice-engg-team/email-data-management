@@ -88,7 +88,8 @@ export default function ContactsPage() {
     if (!lastFetched) {
       fetchStats();
     }
-  }, [lastFetched, fetchStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastFetched]);
 
   // Use cached brands
   useEffect(() => {

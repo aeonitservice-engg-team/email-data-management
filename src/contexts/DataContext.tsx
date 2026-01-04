@@ -57,6 +57,7 @@ interface DataContextState {
   journals: Journal[];
   emailCount: number;
   loading: boolean;
+  error: string | null;
   lastFetched: Date | null;
   fetchStats: () => Promise<void>;
   invalidateCache: () => void;
@@ -67,6 +68,7 @@ const DataContext = createContext<DataContextState>({
   journals: [],
   emailCount: 0,
   loading: false,
+  error: null,
   lastFetched: null,
   fetchStats: async () => {},
   invalidateCache: () => {},
@@ -85,6 +87,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [journals, setJournals] = useState<Journal[]>([]);
   const [emailCount, setEmailCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
 
   // Load from localStorage on mount
@@ -105,6 +108,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       // Fetch only analytics which now includes brands and journals
       const response = await apiFetch('/api/analytics');
@@ -149,6 +153,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
+      setError(errorMessage);
+      // Set lastFetched to prevent infinite retries
+      setLastFetched(new Date());
     } finally {
       setLoading(false);
     }
@@ -169,6 +177,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         journals,
         emailCount,
         loading,
+        error,
         lastFetched,
         fetchStats,
         invalidateCache,

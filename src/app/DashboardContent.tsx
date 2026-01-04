@@ -74,7 +74,8 @@ export function DashboardContent() {
     if (!lastFetched && !statsLoading) {
       fetchStats();
     }
-  }, [lastFetched, statsLoading, fetchStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastFetched, statsLoading]);
 
   // Build dashboard data from cached brands and journals
   useEffect(() => {
