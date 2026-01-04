@@ -7,6 +7,18 @@ import { withDatabase } from '@/lib/api-utils';
  * Test database connection using URL from X-Database-URL header
  */
 export async function GET(request: NextRequest) {
+  // Debug: Check what header we received
+  const dbUrlHeader = request.headers.get('x-database-url');
+  console.log('Test DB - Received header:', dbUrlHeader ? 'YES (length: ' + dbUrlHeader.length + ')' : 'NO');
+  
+  if (!dbUrlHeader) {
+    return NextResponse.json({
+      success: false,
+      error: 'No database URL provided. Please configure it in Settings page and ensure it is saved to localStorage.',
+      timestamp: new Date().toISOString(),
+    }, { status: 400 });
+  }
+
   return withDatabase(request, async (prisma) => {
     try {
       // Test connection by running a simple query

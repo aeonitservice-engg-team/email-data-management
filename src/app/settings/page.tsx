@@ -117,19 +117,25 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       // Save to localStorage first
+      const updatedAt = new Date().toISOString();
       localStorage.setItem(DB_URL_STORAGE_KEY, databaseUrl);
+      localStorage.setItem(`${DB_URL_STORAGE_KEY}_updated`, updatedAt);
+      setLastUpdated(updatedAt);
+      
+      // Debug: Check what we're sending
+      console.log('Testing connection with URL:', databaseUrl.substring(0, 30) + '...');
       
       // Test the connection
       const testResponse = await fetch('/api/test-db', {
         headers: {
-          'X-Database-URL': databaseUrl,
+          'x-database-url': databaseUrl,
         },
       });
       
       const testData = await testResponse.json();
 
       if (testResponse.ok && testData.success) {
-        addToast('Database connection successful!', 'success');
+        addToast(`Database connection successful! Server: ${testData.serverVersion}, DB: ${testData.database}`, 'success');
       } else {
         throw new Error(testData.error || 'Connection test failed');
       }
